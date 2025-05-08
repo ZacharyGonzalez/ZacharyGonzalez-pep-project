@@ -10,7 +10,7 @@ import Model.Message;
 
 public class MessageService {
     private final MessageDAO messageDAO;
-    private final AccountDAO accountDAO; //a message depends on an account
+    private final AccountDAO accountDAO; //A message depends on an account
 
     public MessageService(){
         this.accountDAO = new AccountDAO();
@@ -22,10 +22,7 @@ public class MessageService {
             return false;
         }
         Account userExists = accountDAO.getAccountByID(id);
-        if(userExists == null){
-            return false;
-        }
-        return true;
+        return userExists != null; //User has to exist for a message to be sent
     }
     public Message CreateMessage(Message message){
         if(validMessageText(message.getPosted_by(), message.getMessage_text())){
@@ -47,7 +44,10 @@ public class MessageService {
         if(message == null){
             return message;
         }
-        messageDAO.deleteMessageByID(id);//should add a check for if only 1 entry deleted.
+        int deletedRowCount=messageDAO.deleteMessageByID(id);
+        if(deletedRowCount!=1){
+            //Here is where we would rollback the SQL process since we only want to delete 1 entry
+            System.err.println("Deleted too many entries");}
         return message;
     }
 

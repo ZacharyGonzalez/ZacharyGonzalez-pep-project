@@ -13,12 +13,23 @@ public class AccountService {
     public AccountService(AccountDAO accountDAO){
         this.accountDAO=accountDAO;
     }
+    /**
+     * Criteria To register an account, is not fail-safe but rather fail-open for DB convenience
+     */
+    private boolean registerAccountCriteria(Account account){
+
+        String usernameExists = account.getUsername();
+
+        if(account.getUsername().contentEquals("") || account.getPassword().length()<4){
+            return false;
+        }
+        return accountDAO.getAccountByUsername(usernameExists) == null;
+    }
 
     /**
      * Login account only needs username & password
      */
     public Account LoginAccount(Account account){
-
         return accountDAO.loginAccount(account);
     }
 
@@ -27,12 +38,7 @@ public class AccountService {
      * Also checks for any existing account username in database.
      */
     public Account RegisterAccount(Account account){
-
-        if(account.getUsername().contentEquals("") || account.getPassword().length()<4){
-            return null;
-        }
-        String takenUsername = account.getUsername();
-        if(accountDAO.getAccountByUsername(takenUsername)!=null){
+        if(registerAccountCriteria(account)==false){
             return null;
         }
         return accountDAO.RegisterAccount(account);
